@@ -1,47 +1,52 @@
-const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys');
-const pino = require('pino');
-const config = require('./config');
+const express = require('express');
+const app = express();
+const PORT = process.env.PORT || 3000;
 
-async function startBot() {
-    const { state, saveCreds } = await useMultiFileAuthState('session');
+// ٹیلی گرام بوٹ ٹوکن
+const BOT_TOKEN = '9208160776:AAGCJTTVQSJ45UgBGAo23tPKc8uayuQuRsI';
+
+app.use(express.json());
+
+// ہوم پیج پر ویلکم میسج یا پیئرنگ انٹرفیس دکھانے کے لیے
+app.get('/', (req, res) => {
+    res.send(`
+        <html>
+            <head>
+                <title>Shahzad Zakhmi Bot 007</title>
+                <style>
+                    body { background-color: #0f172a; color: #fff; font-family: Arial, sans-serif; text-align: center; padding-top: 50px; }
+                    .card { background: #1e293b; padding: 30px; border-radius: 15px; display: inline-block; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+                    h1 { color: #f43f5e; }
+                </style>
+            </head>
+            <body>
+                <div class="card">
+                    <h1>Shahzad Zakhmi MD / Bot 007</h1>
+                    <p>✨ Your Bot Server is Live & Running Successfully! ✨</p>
+                    <p>Telegram Bot Token Connected Securely.</p>
+                </div>
+            </body>
+        </html>
+    `);
+});
+
+// ٹیلی گرام کی طرف سے آنے والے میسجز کو ہینڈل کرنے کے لیے ویب ہک (Webhook)
+app.post(`/bot${BOT_TOKEN}`, (req, res) => {
+    const update = req.body;
     
-    const sock = makeWASocket({
-        logger: pino({ level: 'silent' }),
-        printQRInTerminal: true,
-        auth: state
-    });
+    if (update.message && update.message.text) {
+        const chatId = update.message.chat.id;
+        const text = update.message.text;
 
-    sock.ev.on('connection.update', async (update) => {
-        const { connection, lastDisconnect } = update;
-        
-        if (connection === 'close') {
-            const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
-            console.log('کنکشن بند ہو گیا، دوبارہ کوشش جاری ہے...', shouldReconnect);
-            if (shouldReconnect) {
-                startBot();
-            }
-        } else if (connection === 'open') {
-            console.log(`✅ ${config.botName} کامیابی کے ساتھ لائیو ہو گیا ہے!`);
-            console.log(`👑 اونر: ${config.ownerName} (${config.ownerNumber})`);
+        // اگر کوئی /start لکھے تو یہ جواب دے گا
+        if (text === '/start') {
+            const replyMessage = "مرحبا! شہزاد زخمی بوٹ 007 فعال ہو چکا ہے۔ آپ کو کیسی مدد چاہیے؟";
+            // یہاں آپ ٹیلی گرام API کے ذریعے رسپانس بھیج سکتے ہیں
         }
-    });
+    }
+    res.sendStatus(200);
+});
 
-    sock.ev.on('creds.update', saveCreds);
-
-    // بوٹ مینو اور کمانڈز
-    sock.ev.on('messages.upsert', async (m) => {
-        const msg = m.messages[0];
-        if (!msg.message || msg.key.fromMe) return;
-
-        const from = msg.key.remoteJid;
-        const text = msg.message.conversation || msg.message.extendedTextMessage?.text;
-
-        if (text && (text.toLowerCase() === '.menu' || text.toLowerCase() === '/menu')) {
-            await sock.sendMessage(from, { 
-                text: `🔥 *${config.botName}* 🔥\n\nخوش آمدید شہزاد بھائی! یہ بوٹ *${config.ownerName}* کا تیار کردہ ہے۔\n\n📌 *اونر:* ${config.ownerName}\n📌 *ڈویلپر:* ${config.developerName}\n📌 *چینل:* ${config.channelLink}` 
-            });
-        }
-    });
-}
-
-startBot();
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});
