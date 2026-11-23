@@ -5,5 +5,5 @@ module.exports = {
   developerName: "شہزاد زخمی ایم ڈی", // ڈویلپر کا نام
   channelLink: "https://whatsapp.com/channel/0029VbEKCPj0gcfIJkc5XE3Z", // آپ کے واٹس ایپ چینل کی اصل لنک
   prefix: "/",
-  sessionId: "9208160776:AAGCJTTVQSJ45UgBGAo23tPKc8uayuQuRsI" // آپ کا سیشن آئی ڈی
+  sessionId: "9208160776:AAGCJTTVQSJ45UgBGAo23tPKc8uayuQuRsI" // آپ کا ٹکٹ / سیشن آئی ڈی
 };
